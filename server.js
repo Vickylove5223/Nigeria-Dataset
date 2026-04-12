@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const data = require('./data/nigeria-data.json');
+const postalCodes = require('./data/postal-codes.json');
+const logosData = require('./data/state-logos.json');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -114,12 +116,139 @@ app.get('/api/search', (req, res) => {
   res.json(results);
 });
 
+// Postal Codes API Endpoints
+
+// Get all postal codes
+app.get('/api/postal-codes', (req, res) => {
+  res.json(postalCodes);
+});
+
+// Get postal codes by state
+app.get('/api/postal-codes/state/:state', (req, res) => {
+  const state = postalCodes.states.find(s => 
+    s.name.toLowerCase() === req.params.state.toLowerCase()
+  );
+  if (state) {
+    res.json(state);
+  } else {
+    res.status(404).json({ error: 'State not found' });
+  }
+});
+
+// Get postal codes by state and LGA
+app.get('/api/postal-codes/state/:state/lga/:lga', (req, res) => {
+  const state = postalCodes.states.find(s => 
+    s.name.toLowerCase() === req.params.state.toLowerCase()
+  );
+  if (!state) {
+    return res.status(404).json({ error: 'State not found' });
+  }
+
+  const lga = state.lgas.find(l => 
+    l.name.toLowerCase() === req.params.lga.toLowerCase()
+  );
+  if (lga) {
+    res.json(lga);
+  } else {
+    res.status(404).json({ error: 'LGA not found' });
+  }
+});
+
+// Get postal code by town
+app.get('/api/postal-codes/town/:town', (req, res) => {
+  const townQuery = req.params.town.toLowerCase();
+  const results = [];
+
+  postalCodes.states.forEach(state => {
+    state.lgas.forEach(lga => {
+      lga.towns.forEach(town => {
+        if (town.name.toLowerCase().includes(townQuery)) {
+          results.push({
+            town: town.name,
+            postalCode: town.postalCode,
+            lga: lga.name,
+            state: state.name
+          });
+        }
+      });
+    });
+  });
+
+  if (results.length > 0) {
+    res.json(results);
+  } else {
+    res.status(404).json({ error: 'Town not found' });
+  }
+});
+
+// Reverse lookup: Get town by postal code
+app.get('/api/postal-codes/lookup/:postalCode', (req, res) => {
+  const code = req.params.postalCode;
+  
+  let result = null;
+  postalCodes.states.forEach(state => {
+    state.lgas.forEach(lga => {
+      lga.towns.forEach(town => {
+        if (town.postalCode === code) {
+          result = {
+            town: town.name,
+            postalCode: town.postalCode,
+            lga: lga.name,
+            state: state.name,
+            region: state.region
+          };
+        }
+      });
+    });
+  });
+
+  if (result) {
+    res.json(result);
+  } else {
+    res.status(404).json({ error: 'Postal code not found' });
+  }
+});
+
+// ─── Logos API Endpoints ────────────────────────────────────────────────────
+
+// Get all state logos
+app.get('/api/logos', (req, res) => {
+  res.json(logosData.logos);
+});
+
+// Get logo for a specific state
+app.get('/api/logos/:state', (req, res) => {
+  const stateName = req.params.state.toLowerCase();
+  const logo = logosData.logos.find(l =>
+    l.state.toLowerCase() === stateName
+  );
+  if (logo) {
+    res.json(logo);
+  } else {
+    res.status(404).json({ error: `Logo not found for state: ${req.params.state}` });
+  }
+});
+
+// Get list of states that have logos
+app.get('/api/logos/available/states', (req, res) => {
+  const states = logosData.logos.map(l => l.state);
+  res.json({ count: states.length, states });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 app.listen(PORT, () => {
   console.log(`Nigeria Data API running on port ${PORT}`);
   console.log(`Visit http://localhost:${PORT} for documentation`);
   console.log(`\nAPI Statistics:`);
   console.log(`- Total States: ${data.states.length}`);
+  console.log(`- Total LGAs: ${data.states.reduce((sum, s) => sum + s.lgas.length, 0)}`);
+  console.log(`- Total Towns: ${data.states.reduce((sum, s) => sum + s.lgas.reduce((lgaSum, lga) => lgaSum + (lga.towns ? lga.towns.length : 0), 0), 0)}`);
   console.log(`- Total Tribes: ${data.tribes.length}`);
   console.log(`- Total Ethnic Groups: ${data.ethnicGroups.length}`);
   console.log(`- Total Religions: ${data.religions.length}`);
+  console.log(`\nPostal Codes:`);
+  console.log(`- States with postal codes: ${postalCodes.states.length}`);
+  console.log(`- Total LGAs with postal codes: ${postalCodes.states.reduce((sum, s) => sum + s.lgas.length, 0)}`);
+  console.log(`- Total towns with postal codes: ${postalCodes.states.reduce((sum, s) => sum + s.lgas.reduce((lgaSum, lga) => lgaSum + lga.towns.length, 0), 0)}`);
 });
