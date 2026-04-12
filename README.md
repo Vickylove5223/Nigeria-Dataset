@@ -10,8 +10,24 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/Vickylove5223/Nigeria-Dataset/pulls)
 [![Maintained](https://img.shields.io/badge/Maintained-yes-green.svg)](https://github.com/Vickylove5223/Nigeria-Dataset)
 
+**[🌐 View Live Demo](https://vickylove5223.github.io/Nigeria-Dataset/)** · **[📊 Explore Data](https://vickylove5223.github.io/Nigeria-Dataset/)** · **[📖 API Docs](#-api-endpoints)**
+
 Built by [Ifeoluwa Ajetomobi](https://ifeoluwaajetomobi.framer.website/) · UI/UX Designer & SEO Expert
 
+</div>
+
+---
+
+## 🎨 Interactive Data Explorer
+
+**[👉 Explore the data visually](https://vickylove5223.github.io/Nigeria-Dataset/)**
+
+Browse all Nigerian states, LGAs, tribes, ethnic groups, and religions in an interactive web interface. No coding required — perfect for researchers, students, and anyone who wants to explore Nigerian data.
+
+<div align="center">
+  <a href="https://vickylove5223.github.io/Nigeria-Dataset/">
+    <img src="https://img.shields.io/badge/🌐_Live_Demo-Visit_Explorer-008751?style=for-the-badge" alt="Live Demo"/>
+  </a>
 </div>
 
 ---
