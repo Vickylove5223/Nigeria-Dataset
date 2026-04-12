@@ -1,0 +1,41 @@
+{
+  "name": "nigeria-data-api",
+  "version": "1.0.0",
+  "description": "Free API for Nigerian states, LGAs, tribes, ethnic groups, religions - Complete data for all 37 states and 774 LGAs",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "nigeria",
+    "api",
+    "states",
+    "lga",
+    "local-government",
+    "tribes",
+    "ethnic-groups",
+    "nigerian-data",
+    "africa",
+    "geopolitical-zones",
+    "free-api",
+    "open-source"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YOUR_USERNAME/nigeria-data-api.git"
+  },
+  "bugs": {
+    "url": "https://github.com/YOUR_USERNAME/nigeria-data-api/issues"
+  },
+  "homepage": "https://github.com/YOUR_USERNAME/nigeria-data-api#readme",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
