@@ -284,6 +284,17 @@ Data consolidated from multiple verified Nigerian sources and community contribu
 
 ---
 
+## 👨‍💻 Built by Ifeoluwa Ajetomobi
+
+UI/UX Designer · AI Senior Dev · WordPress Web Designer · SEO Content Writer
+
+I design with purpose — blending beautiful user interfaces with great user experience to deliver applications that look great and are easy to use.
+
+🌐 Portfolio: [ifeoluwaajetomobi.framer.website](https://ifeoluwaajetomobi.framer.website/)
+📦 GitHub: [github.com/Vickylove5223](https://github.com/Vickylove5223)
+
+---
+
 Made with ❤️ for Nigerian developers
 
 **Ready to deploy? See [GIT_SETUP.md](GIT_SETUP.md) to get started!**
