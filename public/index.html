@@ -204,7 +204,6 @@ footer a:hover{text-decoration:underline}
     <button class="tab" onclick="switchTab('tribes',this)">👥 Tribes</button>
     <button class="tab" onclick="switchTab('ethnic',this)">🌍 Ethnic Groups</button>
     <button class="tab" onclick="switchTab('religions',this)">🕌 Religions</button>
-    <button class="tab" onclick="switchTab('api',this)">⚡ API Endpoints</button>
     <!-- Make Logo tab removed -->
   </div>
 
@@ -287,7 +286,6 @@ function renderContent() {
   else if (currentTab === 'tribes')   renderTribes();
   else if (currentTab === 'ethnic')   renderEthnic();
   else if (currentTab === 'religions') renderReligions();
-  else if (currentTab === 'api')      renderAPI();
   // maker tab check removed
 }
 
@@ -439,11 +437,23 @@ function renderDetailTab(idx, type, el, ev) {
     if (!html) html = '<div class="dp-empty">No ward list available for this state.</div>';
   }
   else if (type === 'polling') {
-    html = `<div style="background:var(--green-light); padding:16px; border-radius:10px; color:var(--green)">
-      <div style="font-size:14px; margin-bottom:10px">Total Polling Units in <strong>${state.name}</strong>:</div>
-      <div style="font-size:32px; font-weight:800">${state.pollingUnitsCount || '—'}</div>
-      <div style="font-size:12px; opacity:0.8; margin-top:10px">List of specific polling units is available via API or individual LGA export to ensure performance.</div>
-    </div>`;
+    const lgas = state.lgas || [];
+    const totalPU = state.pollingUnitsCount || 0;
+    html = `
+      <div style="background:var(--green-light);padding:12px 16px;border-radius:10px;color:var(--green);margin-bottom:16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:12px;opacity:0.8">Total Polling Units</div>
+          <div style="font-size:28px;font-weight:800">${totalPU > 0 ? totalPU.toLocaleString() : '—'}</div>
+        </div>
+        <div style="flex:1;min-width:200px">
+          <label for="pu-lga-select" style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Select LGA to view wards</label>
+          <select id="pu-lga-select" onchange="renderPUWards(${idx})" style="width:100%;padding:7px 10px;border:1.5px solid rgba(0,135,81,.3);border-radius:8px;font-size:13px;background:#fff;color:var(--text);outline:none;cursor:pointer">
+            <option value="">— Choose an LGA —</option>
+            ${lgas.map((l,i) => `<option value="${i}">${l.name}${l.wards && l.wards.length ? ' ('+l.wards.length+' wards)' : ''}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div id="pu-wards-container"></div>`;
   }
   else if (type === 'postal') {
     html = `<table class="dp-table">
@@ -504,38 +514,98 @@ function renderPostal() {
     <div style="background:var(--green-light);border:1px solid rgba(0,135,81,.2);border-radius:var(--radius);padding:12px 16px;margin-bottom:16px;font-size:13px;color:var(--green)">
       📋 <strong>Format:</strong> 6-digit NIPOST code — <code style="background:#fff;padding:1px 5px;border-radius:3px">RRDDTTT</code> &nbsp;|&nbsp; R=Region · D=District · T=Town
     </div>
-    ${states.map((state, si) => `
-      <div class="pc-state">
-        <div class="pc-state-header" onclick="togglePC(${si})">
-          <div style="width:32px;height:32px;border-radius:6px;background:var(--surface);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">
-            ${state.logo ? `<img src="${state.logo}" style="width:100%;height:100%;object-fit:contain;padding:2px" onerror="this.parentElement.textContent='${state.name.substring(0,2).toUpperCase()}'">` : `<span style="font-size:11px;font-weight:800;color:var(--green)">${state.name.substring(0,2).toUpperCase()}</span>`}
-          </div>
-          <span class="pc-state-name">${state.name} — ${state.capital}</span>
-          <span class="pc-base">${state.postalCode || '—'}</span>
-          <span style="color:var(--muted);font-size:13px;margin-left:8px">▼</span>
-        </div>
-        <div class="pc-lgas" id="pc-${si}">
-          ${state.lgas.map(lga => `
-            <div class="pc-lga-row">
-              <div class="pc-lga-name">
-                📌 ${lga.name}
-                ${lga.postalCode ? `<span class="pc-base" style="font-size:11px">${lga.postalCode}</span>` : ''}
-              </div>
-              <div class="pc-towns-grid">
-                ${(lga.towns||[]).map(t => `
-                  <div class="pc-town">
-                    <span>${typeof t === 'string' ? t : (t.name || 'Unknown')}</span>
-                    <span class="pc-town-code">${t.postalCode || ''}</span>
-                  </div>`).join('')}
-              </div>
-            </div>`).join('')}
-        </div>
-      </div>`).join('')}`;
+    <div class="st-wrap">
+      <table class="st-table">
+        <thead>
+          <tr>
+            <th>Logo</th>
+            <th>State Name</th>
+            <th>Capital</th>
+            <th>Region</th>
+            <th class="st-num" style="text-align:left;">Base Postal Code</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${states.map((state, si) => {
+            const logoHtml = state.logo 
+              ? `<img src="${state.logo}" alt="${state.name}" onerror="this.parentElement.textContent='${state.name.substring(0,2).toUpperCase()}'">`
+              : state.name.substring(0,2).toUpperCase();
+            return `
+            <tr onclick="togglePC(${si})" style="cursor:pointer">
+              <td><div class="st-logo">${logoHtml}</div></td>
+              <td class="st-name">${state.name}</td>
+              <td>${state.capital}</td>
+              <td style="color:var(--muted)">${state.region}</td>
+              <td><span class="pc-badge">${state.postalCode || '—'}</span></td>
+              <td><span class="st-chevron">▶</span></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
 }
 
 function togglePC(si) {
-  const el = document.getElementById(`pc-${si}`);
-  el.classList.toggle('open');
+  const states = allData.states;
+  if (searchQuery) {
+    // recalculate filtered list same way renderPostal does
+    var filtered = states.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()) || s.lgas.some(l => l.name && l.name.toLowerCase().includes(searchQuery.toLowerCase())));
+    openPostalModal(filtered[si]);
+  } else {
+    openPostalModal(states[si]);
+  }
+}
+
+function openPostalModal(state) {
+  if (!state) return;
+  const modal = document.getElementById('stateModal');
+  const header = document.getElementById('modalHeader');
+  const tabs = document.getElementById('modalTabs');
+  const body = document.getElementById('modalBody');
+
+  const logoHtml = state.logo
+    ? `<img src="${state.logo}" alt="${state.name}" style="width:100%;height:100%;object-fit:contain" onerror="this.parentElement.textContent='${state.name.substring(0,2).toUpperCase()}'">`
+    : state.name.substring(0,2).toUpperCase();
+
+  header.innerHTML = `
+    <div class="st-logo" style="width:60px;height:60px;font-size:18px;">${logoHtml}</div>
+    <div>
+      <h2 class="modal-title-h">${state.name}</h2>
+      <div class="modal-meta">📮 Postal Codes &sdot; ${state.capital} &sdot; ${state.region}</div>
+    </div>
+  `;
+
+  tabs.innerHTML = '';
+
+  const lgas = state.lgas || [];
+  let html = `
+    <div style="background:var(--green-light);border:1px solid rgba(0,135,81,.2);border-radius:var(--radius);padding:10px 14px;margin-bottom:16px;font-size:13px;color:var(--green)">
+      📋 <strong>Base Code:</strong> <span class="pc-base">${state.postalCode || '—'}</span>
+    </div>
+    <table class="dp-table">
+      <thead><tr><th>LGA</th><th>Base Code</th><th>Towns / Districts</th></tr></thead>
+      <tbody>
+        ${lgas.map(lga => `
+          <tr>
+            <td><strong>${lga.name}</strong></td>
+            <td><span class="pc-badge">${lga.postalCode || state.postalCode || '—'}</span></td>
+            <td>
+              <div class="towns-wrap" style="gap:4px">
+                ${(lga.towns || []).map(t => `
+                  <div class="town-tag" style="font-size:11px">
+                    ${typeof t === 'string' ? t : (t.name || 'Unknown')}
+                    ${(typeof t !== 'string' && t.postalCode) ? `<span class="tpc">${t.postalCode}</span>` : ''}
+                  </div>`).join('')}
+              </div>
+            </td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
+
+  body.innerHTML = html;
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
 
 
@@ -595,44 +665,33 @@ function renderReligions() {
     </div>`;
 }
 
-/* ── API ENDPOINTS ── */
-function renderAPI() {
-  const base = window.location.origin;
-  const endpoints = [
-    ['/api/states','Get all 37 states with LGAs, towns and postal codes'],
-    ['/api/states/:name','Get a specific state (e.g. /api/states/Lagos)'],
-    ['/api/lgas','Get all LGAs across Nigeria'],
-    ['/api/lgas/:state','Get LGAs for a specific state'],
-    ['/api/regions','Get all geopolitical regions'],
-    ['/api/regions/:region','Get states in a region'],
-    ['/api/tribes','Get all tribes'],
-    ['/api/ethnic-groups','Get all ethnic groups'],
-    ['/api/religions','Get all religions'],
-    ['/api/postal-codes','Get complete postal codes database'],
-    ['/api/postal-codes/state/:state','Get postal codes for a state'],
-    ['/api/postal-codes/state/:state/lga/:lga','Get postal codes for an LGA'],
-    ['/api/postal-codes/town/:town','Search postal codes by town name'],
-    ['/api/postal-codes/lookup/:code','Reverse lookup — find town by postal code'],
-    ['/api/logos','Get all state logos (base64 encoded)'],
-    ['/api/logos/:state','Get logo for a specific state (e.g. /api/logos/Lagos)'],
-    ['/api/logos/available/states','List all states that have a logo'],
-    ['/api/search?q=:query','Search states, LGAs and tribes'],
-    ['/api/metadata','Get API metadata and version info'],
-  ];
-  document.getElementById('content').innerHTML = `
-    <div class="sec-head"><h2>⚡ API Endpoints</h2><span class="badge">${endpoints.length} endpoints</span></div>
-    <div class="api-table">
-      ${endpoints.map(([ep, desc]) => `
-        <div class="api-row">
-          <span class="method">GET</span>
-          <span class="ep">${ep}</span>
-          <span class="ep-desc">${desc}</span>
-        </div>`).join('')}
-    </div>
-    <div class="api-note">💡 Base URL: <strong>${base}</strong> &nbsp;·&nbsp; All responses are JSON &nbsp;·&nbsp; CORS enabled</div>`;
-}
 
 // Logo maker rendering and helper functions removed
+
+/* ── POLLING UNITS WARDS ── */
+function renderPUWards(idx) {
+  const state = filteredStates()[idx];
+  const sel = document.getElementById('pu-lga-select');
+  const container = document.getElementById('pu-wards-container');
+  if (!sel || !container || sel.value === '') { if(container) container.innerHTML = ''; return; }
+  const lga = state.lgas[parseInt(sel.value)];
+  const wards = lga.wards || [];
+  if (!wards.length) {
+    container.innerHTML = `<div class="dp-empty">No ward data available for ${lga.name}.</div>`;
+    return;
+  }
+  container.innerHTML = `
+    <div style="margin-bottom:8px;font-size:13px;font-weight:700;color:var(--green)">
+      📌 ${lga.name} — ${wards.length} ward${wards.length !== 1 ? 's' : ''}
+    </div>
+    <div class="towns-wrap">
+      ${wards.map((w, wi) => `
+        <div class="town-tag" style="border-color:#bfdbfe;background:#eff6ff;cursor:default">
+          <span style="font-size:10px;color:#93c5fd;font-weight:700">${wi + 1}</span>
+          ${w.replace(/-/g, ' ')}
+        </div>`).join('')}
+    </div>`;
+}
 
 /* ── HELPERS ── */
 function filteredStates() {

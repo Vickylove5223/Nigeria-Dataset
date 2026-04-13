@@ -34,6 +34,20 @@ app.get('/api/states/:name', (req, res) => {
   }
 });
 
+// Get logo for a specific state (shortcut via /api/states/:name/logo)
+app.get('/api/states/:name/logo', (req, res) => {
+  const state = data.states.find(s =>
+    s.name.toLowerCase() === req.params.name.toLowerCase()
+  );
+  if (state && state.logo) {
+    res.json({ state: state.name, logo: state.logo });
+  } else if (state) {
+    res.status(404).json({ error: `No logo available for: ${req.params.name}` });
+  } else {
+    res.status(404).json({ error: 'State not found' });
+  }
+});
+
 // Get all LGAs (flattened from all states)
 app.get('/api/lgas', (req, res) => {
   const allLgas = [];
@@ -213,26 +227,79 @@ app.get('/api/postal-codes/lookup/:postalCode', (req, res) => {
 
 // Get all state logos
 app.get('/api/logos', (req, res) => {
-  res.json(logosData.logos);
+  const logos = data.states.map(s => ({
+    state: s.name,
+    logo: s.logo || null
+  }));
+  res.json(logos);
+});
+
+// Get list of states that have logos (must come before /:state to avoid conflict)
+app.get('/api/logos/available/states', (req, res) => {
+  const states = data.states
+    .filter(s => s.logo)
+    .map(s => s.name);
+  res.json({ count: states.length, states });
 });
 
 // Get logo for a specific state
 app.get('/api/logos/:state', (req, res) => {
   const stateName = req.params.state.toLowerCase();
-  const logo = logosData.logos.find(l =>
-    l.state.toLowerCase() === stateName
+  const state = data.states.find(s =>
+    s.name.toLowerCase() === stateName
   );
-  if (logo) {
-    res.json(logo);
+  if (state && state.logo) {
+    res.json({ state: state.name, logo: state.logo });
+  } else if (state) {
+    res.status(404).json({ error: `No logo available for state: ${req.params.state}` });
   } else {
-    res.status(404).json({ error: `Logo not found for state: ${req.params.state}` });
+    res.status(404).json({ error: `State not found: ${req.params.state}` });
   }
 });
 
-// Get list of states that have logos
-app.get('/api/logos/available/states', (req, res) => {
-  const states = logosData.logos.map(l => l.state);
-  res.json({ count: states.length, states });
+// Proxy: fetch and stream the logo image for a specific state
+app.get('/api/logos/:state/image', async (req, res) => {
+  const stateName = req.params.state.toLowerCase();
+  const state = data.states.find(s =>
+    s.name.toLowerCase() === stateName
+  );
+  if (!state || !state.logo) {
+    return res.status(404).json({ error: `Logo not found for state: ${req.params.state}` });
+  }
+
+  // If logo is a URL, proxy it; if base64, decode and send
+  const logo = state.logo;
+  if (logo.startsWith('data:image')) {
+    const matches = logo.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
+    if (matches) {
+      const contentType = matches[1];
+      const buffer = Buffer.from(matches[2], 'base64');
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+      return res.send(buffer);
+    }
+  }
+
+  try {
+    const https = require('https');
+    const http = require('http');
+    const urlModule = require('url');
+    const parsed = urlModule.parse(logo);
+    const protocol = parsed.protocol === 'https:' ? https : http;
+    const request = protocol.get(logo, { headers: { 'User-Agent': 'Mozilla/5.0' } }, (response) => {
+      if (response.statusCode === 301 || response.statusCode === 302) {
+        return res.redirect(response.headers.location);
+      }
+      res.setHeader('Content-Type', response.headers['content-type'] || 'image/png');
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+      response.pipe(res);
+    });
+    request.on('error', () => {
+      res.status(502).json({ error: 'Failed to fetch logo image' });
+    });
+  } catch (e) {
+    res.status(500).json({ error: 'Server error fetching logo' });
+  }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
