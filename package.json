@@ -1,7 +1,7 @@
 {
-  "name": "nigeria-data-api",
+  "name": "nigeria-dataset-api",
   "version": "1.0.0",
-  "description": "Free API for Nigerian states, LGAs, tribes, ethnic groups, religions - Complete data for all 37 states and 774 LGAs",
+  "description": "Free Nigeria Dataset & REST API - 37 states with logos, 774 LGAs, postal codes, tribes, ethnic groups, religions, geopolitical zones. Complete Nigerian geographic and demographic data for developers, researchers, and civic tech projects.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -9,28 +9,59 @@
   },
   "keywords": [
     "nigeria",
-    "api",
-    "states",
-    "lga",
-    "local-government",
+    "nigeria-api",
+    "nigeria-dataset",
+    "nigerian-data",
+    "nigeria-states",
+    "nigeria-states-logos",
+    "state-logos",
+    "nigeria-lga",
+    "local-government-areas",
+    "nigerian-states",
+    "nigeria-postal-codes",
+    "postal-codes",
+    "zip-codes-nigeria",
+    "nigeria-tribes",
+    "nigerian-tribes",
     "tribes",
     "ethnic-groups",
-    "nigerian-data",
+    "nigeria-ethnic-groups",
+    "nigeria-religions",
+    "nigerian-religions",
+    "islam-nigeria",
+    "christianity-nigeria",
     "africa",
+    "african-data",
     "geopolitical-zones",
+    "nigeria-regions",
+    "north-west",
+    "south-west",
+    "south-east",
     "free-api",
-    "open-source"
+    "rest-api",
+    "open-source",
+    "open-data",
+    "civic-tech",
+    "geographic-data",
+    "demographic-data",
+    "json-api",
+    "nigeria-geography",
+    "774-lgas",
+    "37-states",
+    "nigeria-capitals",
+    "state-capitals",
+    "nigeria-slogans"
   ],
   "author": "Ifeoluwa Ajetomobi <https://ifeoluwaajetomobi.framer.website/>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/YOUR_USERNAME/nigeria-data-api.git"
+    "url": "https://github.com/Vickylove5223/Nigeria-Dataset.git"
   },
   "bugs": {
-    "url": "https://github.com/YOUR_USERNAME/nigeria-data-api/issues"
+    "url": "https://github.com/Vickylove5223/Nigeria-Dataset/issues"
   },
-  "homepage": "https://github.com/YOUR_USERNAME/nigeria-data-api#readme",
+  "homepage": "https://vickylove5223.github.io/Nigeria-Dataset/",
   "dependencies": {
     "express": "^4.18.2",
     "cors": "^2.8.5"

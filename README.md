@@ -48,14 +48,29 @@ This dataset is ideal for:
 
 ## 📦 Dataset Contents
 
+This comprehensive Nigeria dataset includes:
+
 | Dataset | Records | Description |
 |---|---|---|
-| States | 37 | All 36 states + FCT Abuja |
+| States | 37 | All 36 states + FCT Abuja with logos |
 | Local Govt Areas (LGAs) | 774 | Complete list for all states |
+| Postal Codes | 774+ | Postal/ZIP codes for all LGAs |
 | Geopolitical Regions | 6 | North West, North East, North Central, South West, South East, South South |
 | Tribes | 22+ | Major tribes with population % and states |
 | Ethnic Groups | 3 | Niger-Congo, Afro-Asiatic, Nilo-Saharan |
 | Religions | 3 | Islam, Christianity, Traditional — with % and regions |
+
+### Nigeria State Logos
+Each state includes an official logo in base64 format, perfect for displaying state emblems in your application without external image hosting.
+
+### Nigeria Postal Codes
+Complete postal code (ZIP code) data for all 774 Local Government Areas across Nigeria, organized by state.
+
+### Nigerian Tribes and Ethnic Groups
+Detailed information on 22+ major Nigerian tribes including Yoruba, Hausa, Igbo, Fulani, Ijaw, Kanuri, Ibibio, Tiv, and more, with population percentages and geographic distribution.
+
+### Religion in Nigeria
+Religious demographic data covering Islam, Christianity, and Traditional religions, with percentage distributions and regional prevalence.
 
 ### State Fields
 ```json
